@@ -8,12 +8,14 @@ import BookAppointment from './pages/BookAppointment';
 import UserDashboard from './pages/UserDashboard';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import Navbar from './components/Navbar';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
         <div className="min-h-screen bg-gray-50">
+          <Navbar />
           <main>
             <Routes>
               <Route path="/" element={<Home />} />
