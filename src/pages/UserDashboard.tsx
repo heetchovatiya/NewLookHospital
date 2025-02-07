@@ -83,4 +83,24 @@ export default function UserDashboard() {
                       ? 'bg-red-100 text-red-800'
                       : 'bg-yellow-100 text-yellow-800'
                   }`}>
-                   
+                    {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
+                  </span>
+                </div>
+                {appointment.notes && (
+                  <div className="mt-2 text-gray-600">
+                    <strong>Notes:</strong> {appointment.notes}
+                  </div>
+                )}
+                {appointment.follow_up_date && (
+                  <div className="mt-2 text-teal-600">
+                    <strong>Follow-up:</strong> {format(new Date(appointment.follow_up_date), 'MMMM d, yyyy')}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
