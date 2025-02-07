@@ -21,7 +21,7 @@ const Register = () => {
     } else {
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert([{ id: user?.id, email, full_name: fullName }]);
+        .insert([{ id: user?.id, email, full_name: fullName, is_admin: false }]);
 
       if (profileError) {
         toast.error(profileError.message);
