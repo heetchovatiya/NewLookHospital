@@ -14,19 +14,32 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { user, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/login`
+      }
+    });
 
     if (error) {
       toast.error(error.message);
     } else {
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([{ id: user?.id, email, full_name: fullName, is_admin: false }]);
+      const user = data.user;
 
-      if (profileError) {
-        toast.error(profileError.message);
+      if (user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([{ id: user.id, email, full_name: fullName, is_admin: false }]);
+
+        if (profileError) {
+          toast.error(profileError.message);
+        } else {
+          toast.success('Registration successful. Please check your email to confirm your registration.');
+          navigate('/login');
+        }
       } else {
-        toast.success('Registration successful');
+        toast.success('Registration successful. Please check your email to confirm your registration.');
         navigate('/login');
       }
     }

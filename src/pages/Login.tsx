@@ -15,24 +15,30 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { user, error } = await supabase.auth.signIn({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
       toast.error(error.message);
     } else {
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user?.id)
-        .single();
+      const user = data.user;
 
-      if (profileError) {
-        toast.error(profileError.message);
+      if (user) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError) {
+          toast.error(profileError.message);
+        } else {
+          setUser(user);
+          setProfile(profile);
+          toast.success('Login successful');
+          navigate('/dashboard');
+        }
       } else {
-        setUser(user);
-        setProfile(profile);
-        toast.success('Login successful');
-        navigate('/dashboard');
+        toast.error('User not found.');
       }
     }
 
