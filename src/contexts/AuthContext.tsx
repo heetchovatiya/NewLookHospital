@@ -1,51 +1,55 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 
-const AuthContext = createContext();
-
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
-    const checkUser = async () => {
-      const user = supabase.auth.user();
-      setUser(user);
+    const session = supabase.auth.session();
+    setUser(session?.user ?? null);
 
-      if (user) {
-        const { data: profile, error } = await supabase
+    if (session?.user) {
+      supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error fetching profile', error);
+          } else {
+            setProfile(data);
+          }
+        });
+    }
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        supabase
           .from('profiles')
           .select('*')
-          .eq('id', user.id)
-          .single();
-        
-        if (!error) {
-          setProfile(profile);
-        }
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data, error }) => {
+            if (error) {
+              console.error('Error fetching profile', error);
+            } else {
+              setProfile(data);
+            }
+          });
       }
-    };
-
-    checkUser();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
-      checkUser();
     });
-
-    return () => {
-      authListener.unsubscribe();
-    };
   }, []);
 
-  const value = {
-    user,
-    profile,
-    setUser,
-    setProfile
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, profile, setUser, setProfile }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
+
+export const useAuth = () => useContext(AuthContext);
